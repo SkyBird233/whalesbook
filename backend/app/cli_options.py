@@ -46,10 +46,10 @@ class Options:
         def list(self):
             print("\n".join(book.name for book in self.books))
 
-        async def update(self):
+        async def update(self, force: bool = False):
             reg = await registry.create_registry(config.settings.docker_registry)  # type: ignore
             for book in self.books:
-                await state.update_book(book, reg)
+                await state.update_book(book, reg, force)
 
         async def stop_containers(self):
             for book in self.books:

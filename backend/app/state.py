@@ -170,7 +170,12 @@ async def stop_containers(book):
         await docker.stop_container(container["ID"])  # type: ignore
 
 
-async def update_book(book: Book, registry: Registry):
+async def update_book(book: Book, registry: Registry, force:bool = False):
     ref_pairs_to_update, outdated_registry_hashes = await get_new_refs(book, registry)
+    if not ref_pairs_to_update and not force:
+        logger.info(f"Nothing to update for book {book.name}")
+        return
+    if force:
+        logger.info(f"Forceing update for book {book.name}")
     await update_images(registry.url, book, ref_pairs_to_update, dry_run=False)
     await update_containers(registry, book)
