@@ -8,3 +8,12 @@ wheels/
 
 # Virtual environments
 .venv
+
+# Editor
+.idea
+.vscode
+
+# Configuration files
+/config/
+
+backend/tests/certs

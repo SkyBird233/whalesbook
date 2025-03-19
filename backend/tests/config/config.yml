@@ -1,0 +1,17 @@
+docker_registry:
+  url: https://registry:5000
+  username: username
+  password: password
+  cafile: /certs/ca.crt
+
+books:
+  - name: book_whoami
+    repos:
+      - name: main
+        url: https://github.com/traefik/whoami.git
+        refs:
+          - "master"
+    traefik_config:
+      base_domain: localhost
+      port: 80
+

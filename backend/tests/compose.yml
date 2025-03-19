@@ -1,0 +1,47 @@
+name: wb-test
+
+services:
+  registry:
+    image: registry:2
+    container_name: registry
+    networks:
+      - reverse_proxy
+    ports:
+      - "127.0.0.1:5000:5000"
+    environment:
+      REGISTRY_STORAGE_DELETE_ENABLED: true
+      REGISTRY_VALIDATION_DISABLED: true
+      REGISTRY_AUTH_HTPASSWD_REALM: "Registry Realm"
+      REGISTRY_AUTH_HTPASSWD_PATH: /auth/htpasswd
+      REGISTRY_HTTP_TLS_KEY: /certs/domain.key
+      REGISTRY_HTTP_TLS_CERTIFICATE: /certs/domain.crt
+    volumes:
+      - ./config/registry_htpasswd:/auth/htpasswd:ro  # username : password
+      - ./certs:/certs:ro
+
+
+  whalesbook:
+    build: ..
+    depends_on:
+      - registry
+    container_name: whalesbook
+    networks:
+      - reverse_proxy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./certs/domain.crt:/certs/ca.crt:ro
+    command: "sh -c 'docker login registry:5000 -u username -p password && /app/.venv/bin/pytest'"
+
+#  test_curl:
+#    image: alpine:latest
+#    depends_on:
+#      - registry
+#    networks:
+#      - reverse_proxy
+#    volumes:
+#      - ./certs/domain.crt:/usr/local/share/ca-certificates/ca.crt:ro
+#    command: "sh -c \"apk add --no-cache curl ca-certificates && update-ca-certificates && curl -v https://registry:5000/v2/_catalog --header 'Authorization: Basic dXNlcm5hbWU6cGFzc3dvcmQ='\""
+#
+
+networks:
+  reverse_proxy:
