@@ -76,7 +76,9 @@ async def update_images(
     ref_pairs_to_update: set[tuple[str, str]],
     dry_run: bool = False,
 ):
-    ref_pair_dicts_to_update = {ref_pair[1]: ref_pair[0] for ref_pair in ref_pairs_to_update}
+    ref_pair_dicts_to_update = {
+        ref_pair[1]: ref_pair[0] for ref_pair in ref_pairs_to_update
+    }
 
     tag_name = f"{urlparse(str(registry_url)).netloc}/{book.name_registry}"
 
@@ -166,3 +168,9 @@ async def stop_containers(book):
 
     for container in old_containers:
         await docker.stop_container(container["ID"])  # type: ignore
+
+
+async def update_book(book: Book, registry: Registry):
+    ref_pairs_to_update, outdated_registry_hashes = await get_new_refs(book, registry)
+    await update_images(registry.url, book, ref_pairs_to_update, dry_run=False)
+    await update_containers(registry, book)
