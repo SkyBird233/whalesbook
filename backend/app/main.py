@@ -1,4 +1,4 @@
-from app.config import settings
-from pathlib import Path
+from fire import Fire
+from app.cli_options import Options
 
-print(settings.from_yaml(Path("../config/config.yml")).model_dump_json(indent=2))
+Fire(Options)

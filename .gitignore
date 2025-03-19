@@ -14,6 +14,6 @@ wheels/
 .vscode
 
 # Configuration files
-/config/
+/config
 
 backend/tests/certs
