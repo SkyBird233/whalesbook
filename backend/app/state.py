@@ -135,7 +135,7 @@ async def update_containers(registry: Registry, book: Book):
             book.name_registry
         ):  # registry tag == subdomain name
             if tag in book_repo_refs.values():
-                labels = book.custom_labels
+                labels = book.custom_labels.copy()
                 if book.traefik_config:
                     labels.extend(
                         docker.gen_traefik_labels(tag, book.name, book.traefik_config)
