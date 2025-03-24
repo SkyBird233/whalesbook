@@ -90,7 +90,8 @@ async def run_container(
 
     cli.add_arg("run")
     cli.add_arg("--detach")
-    cli.add_arg("--rm")
+    if not restart:
+        cli.add_arg("--rm")
 
     if network:
         cli.add_arg("--network", network)
@@ -114,7 +115,7 @@ async def run_container(
     return stdout, stderr, code
 
 
-async def stop_container(identifier: str, docker_context: str = "default"):
+async def stop_container(identifier: str, docker_context: str = "default", remove: bool = True):
     cli = CliInstance()
     cli.add_arg(settings.docker_exec_name)
     cli.add_arg("--context", docker_context)
@@ -128,6 +129,28 @@ async def stop_container(identifier: str, docker_context: str = "default"):
     if code:
         logger.error(f"Failed to stop container {identifier}:\n{stderr}")
     logger.info(f"Stopped container {identifier} ({stdout})")
+
+    if remove:
+        await remove_container(identifier, docker_context)
+
+    return stdout, stderr, code
+
+
+async def remove_container(identifier: str, docker_context: str = "default"):
+    cli = CliInstance()
+    cli.add_arg(settings.docker_exec_name)
+    cli.add_arg("--context", docker_context)
+
+    cli.add_arg("container")
+    cli.add_arg("rm")
+    cli.add_arg(identifier)
+
+    logger.info(f"Removing container {identifier}")
+    stdout, stderr, code = await cli.run()
+    if code:
+        logger.error(f"Failed to remove container {identifier}:\n{stderr}")
+    logger.info(f"Removed container {identifier} ({stdout})")
+
     return stdout, stderr, code
 
 

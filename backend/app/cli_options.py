@@ -1,7 +1,10 @@
 from pathlib import Path
+from anyio import sleep, run
 from app import config
 from app.services import registry
 from app import state
+from app.schedule import scheduler
+from apscheduler.triggers.cron import CronTrigger
 import logging
 
 logger = logging.getLogger(__name__)
@@ -18,10 +21,25 @@ class Options:
         self.config_file = config_file
         config.settings = config.Settings.from_yaml(Path(config_file))
 
-    async def once(self):
+    async def once(self, force=False):
         reg = await registry.create_registry(config.settings.docker_registry)  # type: ignore
         for book in config.settings.books:
-            await state.update_book(book, reg)
+            await state.update_book(book, reg, force)
+
+    def schedule_only(self, cron: str = config.settings.schedule.cron, force=False):
+        async def _():
+            reg = await registry.create_registry(config.settings.docker_registry)  # type: ignore
+            for book in config.settings.books:
+                scheduler.add_job(
+                    state.update_book, CronTrigger.from_crontab(cron), (book, reg, force)
+                )
+            scheduler.start()
+            while True:
+                await sleep(100)
+        try:
+            run(_)
+        except (KeyboardInterrupt, SystemExit):
+            pass
 
     async def test_log(self):
         logger.info("info")

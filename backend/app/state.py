@@ -123,6 +123,12 @@ async def update_containers(registry: Registry, book: Book):
     )
     if code:
         raise Exception("Failed to get current containers")
+    logger.info(old_containers)
+    old_containers = (
+        container
+        for container in old_containers
+        if image_prefix in container["Image"]   # type:ignore
+    )
     logger.debug(f"Current containers for book {book.name}: {old_containers}")
 
     # Start new containers first
@@ -145,7 +151,7 @@ async def update_containers(registry: Registry, book: Book):
                     f"{image_prefix}:{tag}",
                     None,
                     None,
-                    None,
+                    "always",
                     labels,
                     True,
                     book.runner,
@@ -170,7 +176,7 @@ async def stop_containers(book):
         await docker.stop_container(container["ID"])  # type: ignore
 
 
-async def update_book(book: Book, registry: Registry, force:bool = False):
+async def update_book(book: Book, registry: Registry, force: bool = False):
     ref_pairs_to_update, outdated_registry_hashes = await get_new_refs(book, registry)
     if not ref_pairs_to_update and not force:
         logger.info(f"Nothing to update for book {book.name}")

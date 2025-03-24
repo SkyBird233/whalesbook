@@ -73,6 +73,10 @@ class Book(BaseModel):
     # TODO builder and runner validation
 
 
+class SchedulerConfig(BaseModel):
+    cron: str = "*/5 * * * *"
+
+
 class Settings(BaseSettings):
     config_dir: Path = Path("config")
     docker_exec_name: str = "docker"
@@ -81,6 +85,8 @@ class Settings(BaseSettings):
     docker_contexts: list[str] = ["default"]
 
     docker_registry: RegistryConfig | None = None
+
+    schedule: SchedulerConfig = SchedulerConfig()
 
     books: list[Book] = [Book()]
 
