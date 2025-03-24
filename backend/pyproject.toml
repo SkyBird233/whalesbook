@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "anyio[trio]>=4.8.0",
+    "apscheduler>=3.11.0",
     "fire>=0.7.0",
     "httpx>=0.28.1",
     "pydantic-settings[yaml]>=2.8.1",
