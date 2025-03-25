@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 
 class RegistryConfig(BaseModel):
-    url: HttpUrl
+    url: HttpUrl = HttpUrl(url='https://localhost:5000')
     username: str | None = None  # TODO: from docker config or manually login
     password: str | None = None
     cafile: Path | None = None

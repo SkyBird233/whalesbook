@@ -1,13 +1,71 @@
 import anyio
 from app.config import Book
 from app.services.cli_runner import CliInstance
-from app.services.registry import Registry
+from app.services.registry import Registry, RegistryConfig
 from app import docker
-from pydantic import AnyUrl
-from urllib.parse import urlparse
+from typing import Any
+from pydantic import (
+    HttpUrl,
+    BaseModel,
+    model_validator,
+    field_validator,
+)
 import logging
+import re
 
 logger = logging.getLogger(__name__)
+
+
+class MainTag(BaseModel):
+    registry_url: HttpUrl | None = None  # http[s]://HOST[:PORT]
+    book_name_registry: str  # NAMESPACE/REPOSITORY
+    subdomain_name: str | None = None  # TAG
+
+    def to_string(self):
+        string = self.book_name_registry
+        if self.registry_url:
+            port_str = (
+                f":{self.registry_url.port}"
+                if self.registry_url.port not in (80, 443)
+                else ""
+            )
+            string = f"{self.registry_url.host}{port_str}/" + string
+        if self.subdomain_name:
+            string += f":{self.subdomain_name}"
+        return string
+
+    @field_validator("registry_url", mode="before")
+    @classmethod
+    def add_scheme(cls, value):
+        if not value:
+            return RegistryConfig().url
+        if isinstance(value, str) and not (
+            value.startswith("https://") or value.startswith("http://")
+        ):
+            return f"https://{value}"
+        return value
+
+    @model_validator(mode="before")
+    @classmethod
+    def validate(cls, data: Any):
+        if isinstance(data, str):
+            match = re.match(
+                r"^(?:((?:https?:\/\/)?[a-zA-Z\d.-]+(?::[\d]+)?)\/)?([\w.-/]+\/[\w.-]+)(?::([\w.-]+))?$",
+                data,
+            )
+            if not match:
+                raise ValueError(f"Failed to validate main tag string {data}")
+            return dict(
+                zip(
+                    (
+                        "registry_url",
+                        "book_name_registry",
+                        "subdomain_name",
+                    ),
+                    match.groups(),
+                )
+            )
+        return data
 
 
 async def ls_remote(repo_url: str) -> list[tuple[str, str]]:
@@ -34,7 +92,7 @@ async def get_tracking_ref_pairs(book: Book):
     return tracking_ref_pairs
 
 
-async def get_new_refs(book: Book, registry: Registry):
+async def get_new_refs(registry: Registry, book: Book):
     outdated_registry_hashes: set[str] = set()
     ref_pairs_to_update: set[tuple[str, str]] = set()
 
@@ -71,7 +129,7 @@ async def get_new_refs(book: Book, registry: Registry):
 
 
 async def update_images(
-    registry_url: AnyUrl,
+    registry_url: HttpUrl,
     book: Book,
     ref_pairs_to_update: set[tuple[str, str]],
     dry_run: bool = False,
@@ -80,7 +138,9 @@ async def update_images(
         ref_pair[1]: ref_pair[0] for ref_pair in ref_pairs_to_update
     }
 
-    tag_name = f"{urlparse(str(registry_url)).netloc}/{book.name_registry}"
+    tag_name = MainTag(
+        registry_url=registry_url, book_name_registry=book.name_registry
+    ).to_string()
 
     async with anyio.create_task_group() as tg:
         for repo in book.repos:
@@ -101,35 +161,34 @@ async def update_images(
                 )
 
 
-async def rebuild_tracking_images(
-    registry_url: AnyUrl,
-    book: Book,
-    dry_run: bool = False,
-):
-    ref_pairs_to_update = await get_tracking_ref_pairs(book)
-    await update_images(registry_url, book, ref_pairs_to_update, dry_run)
-
-
 async def delete_old_images(book_name, git_hashes):
     # registry & builder & runner?
     pass
 
 
-async def update_containers(registry: Registry, book: Book):
-    # Get current (old) containers
-    image_prefix = f"{urlparse(str(registry.url)).netloc}/{book.name_registry}"
-    old_containers, stderr, code = await docker.get_containers(
+async def get_containers_for_book(registry_url: HttpUrl, book: Book):
+    image_prefix = MainTag(
+        registry_url=registry_url, book_name_registry=book.name_registry
+    ).to_string()
+
+    containers, stderr, code = await docker.get_containers(
         labels=["whalesbook.main_tag"], docker_context=book.runner
     )
     if code:
         raise Exception("Failed to get current containers")
-    logger.info(old_containers)
-    old_containers = (
+
+    containers = (
         container
-        for container in old_containers
-        if image_prefix in container["Image"]   # type:ignore
+        for container in containers
+        if image_prefix in container["Image"]  # type:ignore
     )
-    logger.debug(f"Current containers for book {book.name}: {old_containers}")
+    logger.debug(f"Current containers for book {book.name}: {containers}")
+    return containers
+
+
+async def update_containers(registry: Registry, book: Book):
+    # Get current (old) containers
+    old_containers = await get_containers_for_book(registry.url, book)
 
     # Start new containers first
     book_repo_refs = {
@@ -148,7 +207,11 @@ async def update_containers(registry: Registry, book: Book):
                     )
                 tg.start_soon(
                     docker.run_container,
-                    f"{image_prefix}:{tag}",
+                    MainTag(
+                        registry_url=registry.url,
+                        book_name_registry=book.name_registry,
+                        subdomain_name=tag,
+                    ).to_string(),
                     None,
                     None,
                     "always",
@@ -164,20 +227,15 @@ async def update_containers(registry: Registry, book: Book):
                 tg.start_soon(docker.stop_container, container["ID"], book.runner)  # type: ignore
 
 
-async def stop_containers(book):
-    old_containers, stderr, code = await docker.get_containers(
-        labels=["whalesbook.main_tag"], docker_context=book.runner
-    )
-    if code:
-        raise Exception("Failed to get current containers")
-    logger.info(f"Current containers for book {book.name}: {old_containers}")
+async def stop_containers(registry_url: HttpUrl, book: Book):
+    old_containers = await get_containers_for_book(registry_url, book)
 
     for container in old_containers:
         await docker.stop_container(container["ID"])  # type: ignore
 
 
-async def update_book(book: Book, registry: Registry, force: bool = False):
-    ref_pairs_to_update, outdated_registry_hashes = await get_new_refs(book, registry)
+async def update_book(registry: Registry, book: Book, force: bool = False):
+    ref_pairs_to_update, outdated_registry_hashes = await get_new_refs(registry, book)
     if not ref_pairs_to_update and not force:
         logger.info(f"Nothing to update for book {book.name}")
         return
