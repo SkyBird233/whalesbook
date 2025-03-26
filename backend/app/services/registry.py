@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 
 class RegistryConfig(BaseModel):
-    url: HttpUrl = HttpUrl(url='https://localhost:5000')
+    url: HttpUrl = HttpUrl(url="https://localhost:5000")
     username: str | None = None  # TODO: from docker config or manually login
     password: str | None = None
     cafile: Path | None = None
@@ -31,7 +31,7 @@ class Registry:
         self._username = registry_config.username
         self._password = registry_config.password
         self._cafile = registry_config.cafile
-        self.client: AsyncClient 
+        self.client: AsyncClient
         self.repositories: list[str] = []
 
     async def init(self):
@@ -62,6 +62,8 @@ class Registry:
         return resp.json()["tags"]
 
     async def delete_by_tag(self, repository: str, tag: str):
+        logger.info(f"Deleting {tag} in repository {repository}")
+
         tag_manifest = await self.client.get(
             f"{repository}/manifests/{tag}",
             headers={"Accept": "application/vnd.docker.distribution.manifest.v2+json"},
@@ -71,6 +73,7 @@ class Registry:
         delete_result = await self.client.delete(f"{repository}/manifests/{digest}")
         if not delete_result.status_code == 202:
             raise Exception(f"Failed to delete {repository}:{tag}\n\tDigest: {digest}")
+        logger.info(f"Deleted {tag} in repository {repository}")
 
 
 async def create_registry(registry_config: RegistryConfig):

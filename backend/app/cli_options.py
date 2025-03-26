@@ -54,6 +54,11 @@ class Options:
             for book in self.books:
                 await state.stop_containers(reg.url, book)
 
+        async def delete_old_images(self):
+            reg = await registry.create_registry(config.settings.docker_registry)  # type: ignore
+            for book in self.books:
+                await state.delete_old_images(reg, book)
+
         def schedule_only(self, cron: str = config.settings.schedule.cron, force=False):
             async def main_loop():
                 reg = await registry.create_registry(config.settings.docker_registry)  # type: ignore

@@ -161,9 +161,46 @@ async def update_images(
                 )
 
 
-async def delete_old_images(book_name, git_hashes):
-    # registry & builder & runner?
-    pass
+async def delete_old_images(registry: Registry, book: Book):
+    tracking_ref_pairs = await get_tracking_ref_pairs(book)
+    tracking_main_tags = [
+        MainTag(
+            registry_url=registry.url,
+            book_name_registry=book.name_registry,
+            subdomain_name=ref_pair[1],
+        ).to_string()
+        for ref_pair in tracking_ref_pairs
+    ]
+    tracking_git_tags = [f"git-{ref_pair[0]}" for ref_pair in tracking_ref_pairs]
+
+    # registry
+    registry_tags = await registry.get_tags(book.name_registry)
+    for tag in registry_tags:
+        if tag.startswith("git-") and tag not in tracking_git_tags:
+            try:
+                await registry.delete_by_tag(book.name_registry, tag)
+            except Exception as e:
+                logger.error(e)
+
+    # builder & runner
+    for context in (book.builder, book.runner):
+        images, stderr, code = await docker.get_images(
+            labels=[f"whalesbook.main_tag={tag}" for tag in tracking_main_tags],
+            docker_context=context,
+        )
+        if code:
+            continue
+        image_ids = set(
+            image["ID"]  # type: ignore
+            for image in images
+            if image["Tag"].startswith("git-") and image["Tag"] not in tracking_git_tags  # type: ignore
+        )
+        if image_ids:
+            await docker.remove_images(
+                identifiers=list(image_ids), docker_context=context
+            )
+        else:
+            logger.info(f"No images to remove for docker context {context}")
 
 
 async def get_containers_for_book(registry_url: HttpUrl, book: Book):

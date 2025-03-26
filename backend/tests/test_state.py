@@ -1,5 +1,5 @@
 from app.state import get_new_refs, stop_containers
-from app.state import update_images, update_containers, MainTag
+from app.state import update_images, update_containers, delete_old_images, MainTag
 from app.docker import get_containers
 from pydantic import ValidationError
 import logging
@@ -18,7 +18,7 @@ async def test_main_tag():
         "https://registry.example.com/library/name:git-xxxxx",
         "library/name:some-tag_vX.X.X",
         "library/name",
-        "https://registry:5000/library/name"
+        "https://registry:5000/library/name",
     ]
     for string in t_str:
         logger.info(MainTag.model_validate(string).to_string())
@@ -51,3 +51,5 @@ async def test_update(settings, registry):
     containers = await get_containers(["whalesbook.main_tag"], book.runner)
     logger.info(containers)
     assert not containers[0]
+
+    await delete_old_images(registry, book)

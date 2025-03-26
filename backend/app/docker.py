@@ -52,6 +52,46 @@ async def build_image(
     return stdout, stderr, code
 
 
+async def get_images(labels: list[str] | None = None, docker_context: str = "default"):
+    cli = CliInstance()
+    cli.add_arg(settings.docker_exec_name)
+    cli.add_arg("--context", docker_context)
+
+    cli.add_arg("image")
+    cli.add_arg("ls")
+    cli.add_arg("-a")
+    cli.add_arg("--format", "json")
+    if labels:
+        for label in labels:
+            cli.add_arg("--filter", f"label={label}")
+
+    stdout, stderr, code = await cli.run()
+    if code:
+        logger.error(f"Failed to get images:\n{stderr}")
+    else:
+        stdout = [loads(line) for line in stdout.split("\n")] if stdout else ""
+    return stdout, stderr, code
+
+
+async def remove_images(identifiers: list[str], docker_context: str = "default"):
+    cli = CliInstance()
+    cli.add_arg(settings.docker_exec_name)
+    cli.add_arg("--context", docker_context)
+
+    cli.add_arg("image")
+    cli.add_arg("remove")
+    for id in identifiers:
+        cli.add_arg(id)
+
+    logger.info(f"Removing images {identifiers}")
+    stdout, stderr, code = await cli.run()
+    if code:
+        logger.error(f"Failed to remove image {identifiers}:\n{stderr}")
+    logger.info(f"Removed images {identifiers} ({stdout})")
+
+    return stdout, stderr, code
+
+
 async def get_containers(
     labels: list[str] | None = None, docker_context: str = "default"
 ) -> tuple[list[dict] | str, str, int]:
@@ -64,8 +104,8 @@ async def get_containers(
     cli.add_arg("-a")
     cli.add_arg("--format", "json")
     if labels:
-        for ancestor in labels:
-            cli.add_arg("--filter", f"label={ancestor}")
+        for label in labels:
+            cli.add_arg("--filter", f"label={label}")
 
     stdout, stderr, code = await cli.run()
     if code:
@@ -115,7 +155,9 @@ async def run_container(
     return stdout, stderr, code
 
 
-async def stop_container(identifier: str, docker_context: str = "default", remove: bool = True):
+async def stop_container(
+    identifier: str, docker_context: str = "default", remove: bool = True
+):
     cli = CliInstance()
     cli.add_arg(settings.docker_exec_name)
     cli.add_arg("--context", docker_context)
@@ -148,7 +190,10 @@ async def remove_container(identifier: str, docker_context: str = "default"):
     logger.info(f"Removing container {identifier}")
     stdout, stderr, code = await cli.run()
     if code:
-        logger.error(f"Failed to remove container {identifier}:\n{stderr}")
+        if stderr.startswith("Error response from daemon: No such container:"):
+            logger.warning(f"No such container {identifier}")
+        else:
+            logger.error(f"Failed to remove container {identifier}:\n{stderr}")
     logger.info(f"Removed container {identifier} ({stdout})")
 
     return stdout, stderr, code
