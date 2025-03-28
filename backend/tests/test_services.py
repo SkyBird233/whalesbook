@@ -1,5 +1,5 @@
 import pytest
-from app.services.cli_runner import CliInstance
+from whalesbook.services.cli_runner import CliInstance
 
 pytestmark = pytest.mark.anyio
 

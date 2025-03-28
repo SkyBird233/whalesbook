@@ -5,7 +5,7 @@ from pydantic_settings import (
     YamlConfigSettingsSource,
 )
 import re
-from app.services.registry import RegistryConfig
+from .services.registry import RegistryConfig
 from typing import Any
 
 

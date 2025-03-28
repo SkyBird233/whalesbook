@@ -1,8 +1,8 @@
 import anyio
-from app.config import Book
-from app.services.cli_runner import CliInstance
-from app.services.registry import Registry, RegistryConfig
-from app import docker
+from .config import Book
+from .services.cli_runner import CliInstance
+from .services.registry import Registry, RegistryConfig
+from . import docker
 from typing import Any
 from pydantic import (
     HttpUrl,

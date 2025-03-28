@@ -410,18 +410,18 @@ wheels = [
 [[package]]
 name = "whalesbook"
 version = "0.1.0"
-source = { virtual = "." }
+source = { editable = "." }
 dependencies = [
     { name = "anyio", extra = ["trio"] },
     { name = "apscheduler" },
     { name = "fire" },
     { name = "httpx" },
     { name = "pydantic-settings", extra = ["yaml"] },
-    { name = "pytest" },
 ]
 
 [package.dev-dependencies]
 dev = [
+    { name = "pytest" },
     { name = "ruff" },
 ]
 
@@ -432,8 +432,10 @@ requires-dist = [
     { name = "fire", specifier = ">=0.7.0" },
     { name = "httpx", specifier = ">=0.28.1" },
     { name = "pydantic-settings", extras = ["yaml"], specifier = ">=2.8.1" },
-    { name = "pytest", specifier = ">=8.3.5" },
 ]
 
 [package.metadata.requires-dev]
-dev = [{ name = "ruff", specifier = ">=0.9.9" }]
+dev = [
+    { name = "pytest", specifier = ">=8.3.5" },
+    { name = "ruff", specifier = ">=0.9.9" },
+]

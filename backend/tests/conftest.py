@@ -1,7 +1,7 @@
 import pytest
 from pathlib import Path
-from app.config import Settings
-from app.services.registry import create_registry
+from whalesbook.config import Settings
+from whalesbook.services.registry import create_registry
 
 
 @pytest.fixture

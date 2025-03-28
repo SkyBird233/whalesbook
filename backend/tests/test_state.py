@@ -1,6 +1,6 @@
-from app.state import get_new_refs, stop_containers
-from app.state import update_images, update_containers, delete_old_images, MainTag
-from app.docker import get_containers
+from whalesbook.state import get_new_refs, stop_containers
+from whalesbook.state import update_images, update_containers, delete_old_images, MainTag
+from whalesbook.docker import get_containers
 from pydantic import ValidationError
 import logging
 import pytest

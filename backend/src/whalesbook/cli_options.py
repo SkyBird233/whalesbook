@@ -1,9 +1,9 @@
 from pathlib import Path
 from anyio import sleep, run
-from app import config
-from app.services import registry
-from app import state
-from app.schedule import scheduler
+from whalesbook import config
+from .services import registry
+from . import state
+from .schedule import scheduler
 from apscheduler.triggers.cron import CronTrigger
 import logging
 
@@ -12,13 +12,13 @@ logger = logging.getLogger(__name__)
 
 class Options:
     def __init__(self, config_file: Path = Path("config.yml"), verbose: bool = False):
-        config_file = Path(config_file)
-        if not config_file.exists():
-            raise Exception(f"Config file not found: {config_file.absolute()}")
-
+        self.config_file = Path(config_file)
         logging.basicConfig(level=logging.DEBUG if verbose else logging.INFO)
 
-        self.config_file = config_file
+        if not config_file.exists():
+            logger.warning(f"Config file not found: {config_file.absolute()}")
+            return
+            
         config.settings = config.Settings.from_yaml(Path(config_file))
 
     async def test_log(self):

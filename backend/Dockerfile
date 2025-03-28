@@ -1,12 +1,15 @@
-FROM alpine:3
+FROM ghcr.io/astral-sh/uv:python3.12-alpine AS builder
 
-RUN apk add --no-cache python3~3.12 docker-cli docker-cli-buildx uv git curl
+RUN apk add --no-cache docker-cli docker-cli-buildx git
 
 WORKDIR /app
-COPY pyproject.toml .python-version uv.lock ./
-RUN uv sync --frozen --no-cache
 
-COPY . /app
-RUN uv pip install -e .
+RUN --mount=type=bind,source=uv.lock,target=uv.lock \
+    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+    uv sync --frozen --no-install-project
 
-CMD ["/app/.venv/bin/python", "app/main.py"]
+ADD . /app
+
+RUN uv sync --frozen
+
+CMD [ "/app/.venv/bin/whalesbook" ]

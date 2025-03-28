@@ -1,7 +1,7 @@
 from pydantic import AnyUrl
 from pathlib import Path
-from app.services.cli_runner import CliInstance
-from app.config import settings, TraefikConfig
+from .services.cli_runner import CliInstance
+from .config import settings, TraefikConfig
 import logging
 from json import loads
 

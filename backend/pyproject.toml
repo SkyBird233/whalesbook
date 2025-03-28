@@ -10,13 +10,20 @@ dependencies = [
     "fire>=0.7.0",
     "httpx>=0.28.1",
     "pydantic-settings[yaml]>=2.8.1",
-    "pytest>=8.3.5",
 ]
+
+[project.scripts]
+whalesbook = "whalesbook:main"
 
 [dependency-groups]
 dev = [
+    "pytest>=8.3.5",
     "ruff>=0.9.9",
 ]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [tool.pytest.ini_options]
 log_cli = 1

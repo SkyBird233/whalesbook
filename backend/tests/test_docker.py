@@ -1,5 +1,5 @@
 import pytest
-from app import docker
+from whalesbook import docker
 import logging
 
 pytestmark = pytest.mark.anyio
