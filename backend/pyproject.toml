@@ -13,7 +13,7 @@ dependencies = [
 ]
 
 [project.scripts]
-whalesbook = "whalesbook:main"
+whalesbook = "whalesbook.main:cli"
 
 [dependency-groups]
 dev = [
