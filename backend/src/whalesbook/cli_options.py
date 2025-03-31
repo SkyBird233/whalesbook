@@ -1,10 +1,9 @@
 from pathlib import Path
 from anyio import sleep, run
-from whalesbook import config
+from . import config
 from .services import registry
 from . import state
-from .schedule import scheduler
-from apscheduler.triggers.cron import CronTrigger
+from .schedule import schedule_books
 import logging
 
 logger = logging.getLogger(__name__)
@@ -18,7 +17,7 @@ class Options:
         if not self.config_file.exists():
             logger.warning(f"Config file not found: {config_file.absolute()}")
             return
-            
+
         config.settings = config.Settings.from_yaml(Path(config_file))
 
     async def test_log(self):
@@ -62,13 +61,7 @@ class Options:
         def schedule_only(self, cron: str = config.settings.schedule.cron, force=False):
             async def main_loop():
                 reg = await registry.create_registry(config.settings.docker_registry)  # type: ignore
-                for book in self.books:
-                    scheduler.add_job(
-                        state.update_book,
-                        CronTrigger.from_crontab(cron),
-                        (reg, book, force),
-                    )
-                scheduler.start()
+                schedule_books(cron, reg, self.books)
                 while True:
                     await sleep(100)
 
