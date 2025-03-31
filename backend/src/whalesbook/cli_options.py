@@ -4,6 +4,8 @@ from . import config
 from .services import registry
 from . import state
 from .schedule import schedule_books
+from .server import app
+from uvicorn import run as uvrun
 import logging
 
 logger = logging.getLogger(__name__)
@@ -15,14 +17,18 @@ class Options:
         logging.basicConfig(level=logging.DEBUG if verbose else logging.INFO)
 
         if not self.config_file.exists():
-            logger.warning(f"Config file not found: {config_file.absolute()}")
+            logger.warning(f"Config file not found: {config_file.resolve()}")
             return
 
+        logger.info(F"Using config file {self.config_file.resolve()}")
         config.settings = config.Settings.from_yaml(Path(config_file))
 
     async def test_log(self):
         logger.info("info")
         logger.debug("debug")
+
+    def serve(self):
+        uvrun(app)
 
     class config:
         def validate(self):

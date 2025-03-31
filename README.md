@@ -1,14 +1,14 @@
 
+# Concept
+- Status from config file and interacting with Docker cli and registry
+- Container restart policy managed by Docker
+
 
 # TODO
 
-- docker connect to registry in compose
-  - dind or
-  - cert with basic auth
 - read from ~/.docker/config ?
   - or use docker inspect to replace registry.py?
 - catch build failures (upload failed?)
-- tests passed
 
 
 
