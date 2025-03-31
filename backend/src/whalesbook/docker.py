@@ -203,6 +203,8 @@ def gen_traefik_labels(
     subdomain_name: str, book_name: str, traefik_config: TraefikConfig
 ):
     return [
-        f"traefik.http.services.{subdomain_name}.loadbalancer.server.port={traefik_config.port}",
+        f"traefik.http.services.{book_name}--{subdomain_name}.loadbalancer.server.port={traefik_config.port}",
         f"traefik.http.routers.{book_name}--{subdomain_name}.rule=Host(`{subdomain_name}.{book_name}.{traefik_config.base_domain}`)",
+        f"traefik.http.routers.{book_name}--{subdomain_name}.tls.domains[0].main=*.{book_name}.{traefik_config.base_domain}",
+        f"traefik.http.routers.{book_name}--{subdomain_name}.tls.certresolver={traefik_config.cert_resolver}",
     ]

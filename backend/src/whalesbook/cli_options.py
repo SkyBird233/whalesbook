@@ -15,7 +15,7 @@ class Options:
         self.config_file = Path(config_file)
         logging.basicConfig(level=logging.DEBUG if verbose else logging.INFO)
 
-        if not config_file.exists():
+        if not self.config_file.exists():
             logger.warning(f"Config file not found: {config_file.absolute()}")
             return
             

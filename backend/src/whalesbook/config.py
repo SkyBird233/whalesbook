@@ -50,6 +50,7 @@ class Repo(BaseModel):
 class TraefikConfig(BaseModel):
     base_domain: str = "localhost"
     port: int = 80
+    cert_resolver: str = "myresolver"
 
 
 class Book(BaseModel):
@@ -61,6 +62,7 @@ class Book(BaseModel):
     runner: str = "default"
     traefik_config: TraefikConfig | None = TraefikConfig()
     custom_labels: list[str] = []
+    docker_network: str | None = None
 
     @model_validator(mode="after")
     def serialize_name(self):

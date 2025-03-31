@@ -249,7 +249,7 @@ async def update_containers(registry: Registry, book: Book):
                         book_name_registry=book.name_registry,
                         subdomain_name=tag,
                     ).to_string(),
-                    None,
+                    book.docker_network,
                     None,
                     "always",
                     labels,
