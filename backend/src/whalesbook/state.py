@@ -102,7 +102,8 @@ async def get_new_refs(registry: Registry, book: Book):
         if book.name_registry in registry.repositories
         else []
     )
-    registry_hashes = [tag for tag in registry_repo_tags if not tag.startswith("git-")]
+    registry_hashes = [tag for tag in registry_repo_tags if tag.startswith("git-")]
+    logger.debug(f"Registry_hashes: {registry_hashes}")
 
     # Git remote
     tracking_ref_pairs: set[tuple[str, str]] = await get_tracking_ref_pairs(book)
@@ -142,10 +143,12 @@ async def update_images(
         registry_url=registry_url, book_name_registry=book.name_registry
     ).to_string()
 
+    logger.debug(f"Refs to update {ref_pair_dicts_to_update.keys()}")
     async with anyio.create_task_group() as tg:
         for repo in book.repos:
             for ref in repo.refs:
                 if ref.name not in ref_pair_dicts_to_update.keys():
+                    logger.debug(f"No need to update {ref.name}")
                     continue
                 tg.start_soon(
                     docker.build_image,
