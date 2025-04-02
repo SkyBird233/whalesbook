@@ -6,11 +6,9 @@ dist/
 wheels/
 *.egg-info
 
-# Node
-node_modules
-
 # Virtual environments
 .venv
+node_modules
 
 # Editor
 .idea
@@ -21,3 +19,6 @@ node_modules
 
 # Test related
 backend/tests/certs
+
+# Generated client
+frontend/src/client

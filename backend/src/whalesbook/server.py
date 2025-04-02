@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.routing import APIRoute
 from contextlib import asynccontextmanager
 from pydantic import BaseModel
 from .schedule import scheduler, schedule_books
@@ -15,8 +16,15 @@ async def lifespan(app: FastAPI):
     scheduler.shutdown()
 
 
-app = FastAPI(lifespan=lifespan, root_path="/api/v1")
-# app = FastAPI(root_path="/api/v1")
+def generate_unique_id(route: APIRoute):
+    return route.name
+
+
+app = FastAPI(
+    lifespan=lifespan,
+    root_path="/api/v1",
+    generate_unique_id_function=generate_unique_id,
+)
 
 
 @app.get("/", status_code=200)
@@ -25,7 +33,7 @@ async def health_check() -> None:
 
 
 @app.get("/books")
-async def list_books() -> list[config.Book]:
+async def get_books() -> list[config.Book]:
     return config.settings.books
 
 
