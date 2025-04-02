@@ -25,8 +25,8 @@ async def health_check() -> None:
 
 
 @app.get("/books")
-async def list_books() -> list[str]:
-    return [book.name for book in config.settings.books]
+async def list_books() -> list[config.Book]:
+    return config.settings.books
 
 
 @app.get("/books/{book_name}")
