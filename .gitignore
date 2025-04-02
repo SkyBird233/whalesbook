@@ -6,6 +6,9 @@ dist/
 wheels/
 *.egg-info
 
+# Node
+node_modules
+
 # Virtual environments
 .venv
 
@@ -16,4 +19,5 @@ wheels/
 # Configuration files
 /config
 
+# Test related
 backend/tests/certs
