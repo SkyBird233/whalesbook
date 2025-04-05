@@ -3,7 +3,7 @@ from .config import Book
 from .services.cli_runner import CliInstance
 from .services.registry import Registry, RegistryConfig
 from . import docker
-from typing import Any
+from typing import Any, Literal
 from pydantic import (
     HttpUrl,
     BaseModel,
@@ -224,6 +224,49 @@ async def get_containers_for_book(registry_url: HttpUrl, book: Book):
     )
     logger.debug(f"Current containers for book {book.name}: {containers}")
     return containers
+
+
+class RefState(BaseModel):
+    state: Literal["building", "running", "unknown"]
+    url: HttpUrl | None = None
+    build_context: str | None = None
+
+
+async def get_refs_state(registry_url: HttpUrl, book: Book):
+    states = {
+        repo.name: {ref.name: RefState(state="unknown") for ref in repo.refs}
+        for repo in book.repos
+    }
+
+    mapping = {
+        ref.subdomain_name: (repo.name, ref.name)
+        for repo in book.repos
+        for ref in repo.refs
+    }
+
+    containers_raw = await get_containers_for_book(registry_url, book)
+
+    for container in containers_raw:
+        labels = {
+            k: v
+            for label in container["Labels"].split(",")  # type:ignore
+            for k, v in [label.split("=", maxsplit=1)]
+        }
+        subdomain_name = MainTag.model_validate(
+            labels["whalesbook.main_tag"]
+        ).subdomain_name
+
+        states[mapping[subdomain_name][0]][mapping[subdomain_name][1]] = RefState(
+            state="running",
+            url=(
+                HttpUrl(f"http://{subdomain_name}.{book.name}.{book.traefik_config.base_domain}")
+                if book.traefik_config
+                else None
+            ),
+            build_context=labels["whalesbook.build_context"],
+        )
+
+    return states
 
 
 async def update_containers(registry: Registry, book: Book):

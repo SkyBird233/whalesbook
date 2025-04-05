@@ -1,11 +1,10 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Response
 from fastapi.routing import APIRoute
 from contextlib import asynccontextmanager
-from pydantic import BaseModel
 from .schedule import scheduler, schedule_books
 from .services.registry import create_registry
 from . import config
-from .state import get_containers_for_book, MainTag
+from .state import RefState, get_refs_state
 
 
 @asynccontextmanager
@@ -28,8 +27,8 @@ app = FastAPI(
 
 
 @app.get("/", status_code=200)
-async def health_check() -> None:
-    return
+async def health_check() -> Response:
+    return Response(status_code=200)
 
 
 @app.get("/books")
@@ -45,37 +44,10 @@ async def get_book(book_name: str) -> config.Book:
     return book[0]
 
 
-class ContainerOut(BaseModel):
-    subdomain_name: str
-    base_domain: str | None = None
-    build_context: str
-
-
-@app.get("/books/{book_name}/containers")
-async def get_book_containers(book_name: str) -> list[ContainerOut]:
+@app.get("/books/{book_name}/state")
+async def get_book_state(book_name: str) -> dict[str, dict[str, RefState]]:
     book = await get_book(book_name)
-    containers_raw = await get_containers_for_book(
+    return await get_refs_state(
         config.settings.docker_registry.url,  # type:ignore
         book,
     )
-
-    containers = []
-    for container in containers_raw:
-        labels = {
-            k: v
-            for label in container["Labels"].split(",")  # type:ignore
-            for k, v in [label.split("=", maxsplit=1)]
-        }
-        containers.append(
-            ContainerOut(
-                subdomain_name=MainTag.model_validate(
-                    labels["whalesbook.main_tag"]
-                ).subdomain_name
-                or "",
-                base_domain=f"{book.name}.{book.traefik_config.base_domain}"
-                if book.traefik_config
-                else None,
-                build_context=labels["whalesbook.build_context"],
-            )
-        )
-    return containers
