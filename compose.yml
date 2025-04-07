@@ -1,0 +1,35 @@
+name: whalesbook
+
+services:
+  # Test-only traefik config
+  traefik:
+    image: traefik:latest
+    command:
+      - --log.level=TRACE
+      - --entrypoints.web.address=:80
+      - --providers.docker
+      - --api.insecure=true
+    ports:
+      - 8080:80
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+
+  frontend:
+    build: frontend
+    labels:
+      - "traefik.http.routers.frontend.rule=PathPrefix(`/`)"
+      - "traefik.http.services.frontend.loadbalancer.server.port=80"
+
+  backend:
+    build: backend
+    labels:
+      - "traefik.http.routers.backend.rule=PathPrefix(`/api/v1`)"
+      - "traefik.http.services.backend.loadbalancer.server.port=8000"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./config:/config"
+    entrypoint:
+      - /app/.venv/bin/whalesbook
+      - --config-file
+      - /config/config.yml
+      - serve
