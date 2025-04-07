@@ -9,7 +9,7 @@ defineProps<{
     :href="url"
     target="_blank"
     onclick="event.stopPropagation();"
-    class="underline text-nowrap hover:underline-offset-3"
+    class="underline wrap-anywhere hover:underline-offset-3"
     >{{ url }}</a
   >
 </template>

@@ -16,8 +16,8 @@ onBeforeMount(async () => {
 </script>
 
 <template>
-  <div class="flex items-center justify-center h-screen">
-    <main class="max-w-xl">
+  <div class="flex items-center-safe justify-center-safe h-screen overflow-auto">
+    <main class="flex-1 min-w-3xs max-w-[min(var(--container-lg),100vw)] p-2">
       <RouterView />
     </main>
   </div>

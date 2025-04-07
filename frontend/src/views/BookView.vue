@@ -48,13 +48,12 @@ watch(
 
 <template>
   <RouterLink to="/" class="hover:underline"><- back</RouterLink>
-  <h2 class="text-2xl pb-2">Book {{ currentBook?.name }}</h2>
-  <div v-if="currentBook" class="flex flex-col gap-4">
-    <div v-for="repo in currentBook.repos" class="outline p-2">
-      <h3 class="text-xl pb-1">{{ repo.name }}</h3>
-      <OutLink v-if="repo.url" :url="repo.url" />
-      <div v-for="ref in repo.refs" v-if="repo.name">
-        <div>- {{ ref.name }}</div>
+  <h2 class="text-2xl pt-2 pd-1">Book {{ currentBook?.name }}</h2>
+  <div v-if="currentBook" class="flex flex-col gap-1">
+    <div v-for="repo in currentBook.repos">
+      <b>{{ repo.name }}</b> | [<OutLink v-if="repo.url" :url="repo.url" />]
+      <div v-for="ref in repo.refs" v-if="repo.name" class="border-l pl-[2ch]">
+        <div>{{ ref.name?.replace("refs/heads/", "") }}</div>
         <div
           v-if="
             ref.name &&
@@ -63,7 +62,7 @@ watch(
             bookStore.states[currentBook.name][repo.name][ref.name].state !==
               'unknown'
           "
-          class="pl-[1ch] ml-[1ch] border-l"
+          class="pl-[2ch] border-l"
         >
           <div>
             State:
@@ -83,7 +82,7 @@ watch(
               }}</OutLink
             >
           </div>
-          <div>
+          <div class="wrap-anywhere">
             Git hash:
             {{
               bookStore.states[currentBook.name][repo.name][
@@ -92,9 +91,7 @@ watch(
             }}
           </div>
         </div>
-        <div v-else class="pl-[1ch] ml-[1ch] border-l">
-          State: <i>unknown</i>
-        </div>
+        <div v-else class="pl-[2ch] border-l">State: <i>unknown</i></div>
       </div>
     </div>
   </div>
