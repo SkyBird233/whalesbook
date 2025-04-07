@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Response
+from fastapi import FastAPI, APIRouter, HTTPException, Response
 from fastapi.routing import APIRoute
 from contextlib import asynccontextmanager
 from .schedule import scheduler, schedule_books
@@ -19,24 +19,28 @@ def generate_unique_id(route: APIRoute):
     return route.name
 
 
-app = FastAPI(
-    lifespan=lifespan,
-    root_path="/api/v1",
+fastapi_options = {"root_path": "/api/v1", "lifespan": lifespan}
+
+router = APIRouter(
     generate_unique_id_function=generate_unique_id,
 )
 
 
-@app.get("/", status_code=200)
+app = FastAPI(**fastapi_options)
+app.include_router(router)
+
+
+@router.get("/", status_code=200)
 async def health_check() -> Response:
     return Response(status_code=200)
 
 
-@app.get("/books")
+@router.get("/books")
 async def get_books() -> list[config.Book]:
     return config.settings.books
 
 
-@app.get("/books/{book_name}")
+@router.get("/books/{book_name}")
 async def get_book(book_name: str) -> config.Book:
     book = tuple(book for book in config.settings.books if book.name == book_name)
     if not book:
@@ -44,7 +48,7 @@ async def get_book(book_name: str) -> config.Book:
     return book[0]
 
 
-@app.get("/books/{book_name}/state")
+@router.get("/books/{book_name}/state")
 async def get_book_state(book_name: str) -> dict[str, dict[str, RefState]]:
     book = await get_book(book_name)
     return await get_refs_state(
