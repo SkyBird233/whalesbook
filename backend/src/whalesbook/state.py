@@ -259,7 +259,7 @@ async def get_refs_state(registry_url: HttpUrl, book: Book):
         states[mapping[subdomain_name][0]][mapping[subdomain_name][1]] = RefState(
             state="running",
             url=(
-                HttpUrl(f"http://{subdomain_name}.{book.name}.{book.traefik_config.base_domain}")
+                HttpUrl(f"https://{subdomain_name}.{book.name}.{book.traefik_config.base_domain}")
                 if book.traefik_config
                 else None
             ),
