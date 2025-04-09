@@ -1,24 +1,6 @@
-# Python-generated files
-__pycache__/
-*.py[oc]
-build/
-dist/
-wheels/
-*.egg-info
-
-# Virtual environments
-.venv
-node_modules
-
 # Editor
 .idea
 .vscode
 
 # Configuration files
 /config
-
-# Test related
-backend/tests/certs
-
-# Generated client
-frontend/src/client
