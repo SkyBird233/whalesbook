@@ -3,6 +3,7 @@ import { onBeforeMount } from "vue";
 import { RouterView } from "vue-router";
 import { useBookStore } from "./stores/books";
 import { getBooks } from "@/client";
+import HeaderComponent from "./components/HeaderComponent.vue";
 
 const bookStore = useBookStore();
 
@@ -17,12 +18,13 @@ onBeforeMount(async () => {
 </script>
 
 <template>
-  <div
-    class="flex h-screen items-center-safe justify-center-safe overflow-auto"
-  >
-    <main class="max-w-[min(var(--container-lg),100vw)] min-w-3xs flex-1 p-2">
-      <RouterView />
-    </main>
+  <div class="flex h-screen justify-center-safe overflow-auto">
+    <div class="max-w-[min(var(--container-lg),100vw)] min-w-3xs flex-1">
+      <HeaderComponent />
+      <main class="m-2">
+        <RouterView />
+      </main>
+    </div>
   </div>
 </template>
 

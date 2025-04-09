@@ -10,6 +10,6 @@ defineProps<{
     target="_blank"
     onclick="event.stopPropagation();"
     class="wrap-anywhere underline hover:underline-offset-3"
-    >{{ url }}</a
+    ><slot>{{ url }}</slot></a
   >
 </template>

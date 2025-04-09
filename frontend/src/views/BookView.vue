@@ -48,8 +48,7 @@ watch(
 </script>
 
 <template>
-  <RouterLink to="/" class="hover:underline">← back</RouterLink>
-  <h2 class="pd-1 pt-2 text-2xl">Book {{ currentBook?.name }}</h2>
+  <h2 class="pd-2 text-2xl">Book {{ currentBook?.name }}</h2>
   <div v-if="currentBook" class="flex flex-col gap-1">
     <div v-for="repo in currentBook.repos" :key="repo.name">
       <b>{{ repo.name }}</b> | [<OutLink v-if="repo.url" :url="repo.url" />]
