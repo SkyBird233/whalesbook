@@ -9,6 +9,7 @@ const bookStore = useBookStore();
 onBeforeMount(async () => {
   if (bookStore.books.length === 0) {
     console.log("Fetching books...");
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { data, error } = await getBooks();
     bookStore.books = data ?? [];
   }

@@ -9,6 +9,7 @@ export const useBookStore = defineStore("books", () => {
   const states: Ref<{ [bookName: string]: GetBookStateResponse }> = ref({});
 
   function getBook(bookName: string) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     return books.value.filter((v, i, a) => v.name == bookName)[0];
   }
 
