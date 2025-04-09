@@ -17,14 +17,26 @@ services:
   frontend:
     build: frontend
     labels:
-      - "traefik.http.routers.frontend.rule=PathPrefix(`/`)"
-      - "traefik.http.services.frontend.loadbalancer.server.port=80"
+      - "traefik.http.routers.wb-frontend.rule=PathPrefix(`/`)"
+      - "traefik.http.services.wb-frontend.loadbalancer.server.port=80"
+      # The example below redirects https://SOMETHING.example.com to https://example.com/books/SOMETHING
+      # - "traefik.http.routers.wb-frontend.rule=HostRegexp(`([^.]+\\.)?example\\.com`)"
+      # - "traefik.http.services.wb-frontend.loadbalancer.server.port=80"
+      # - "traefik.http.routers.wb-frontend.tls.certresolver=yourresolver"
+      # - "traefik.http.routers.wb-frontend.tls.domains[0].main=*.example.com"
+      # - "traefik.http.routers.wb-frontend.middlewares=wb-frontend-redirect"
+      # - "traefik.http.middlewares.wb-frontend-redirect.redirectregex.regex=^https://([^.]+)\\.example\\.com"
+      # - "traefik.http.middlewares.wb-frontend-redirect.redirectregex.replacement=https://example.com/books/$${1}"
+
 
   backend:
     build: backend
     labels:
-      - "traefik.http.routers.backend.rule=PathPrefix(`/api/v1`)"
-      - "traefik.http.services.backend.loadbalancer.server.port=8000"
+      - "traefik.http.routers.wb-backend.rule=PathPrefix(`/api/v1`)"
+      - "traefik.http.services.wb-backend.loadbalancer.server.port=8000"
+      # - "traefik.http.routers.wb-backend.rule=Host(`example.com`) && PathPrefix(`/api/v1`)"
+      # - "traefik.http.services.wb-backend.loadbalancer.server.port=8000"
+      # - "traefik.http.routers.wb-backend.tls.certresolver=yourresolver"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
       - "./config:/config"
