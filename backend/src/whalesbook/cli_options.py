@@ -4,7 +4,7 @@ from . import config
 from .services import registry
 from . import state
 from .schedule import schedule_books
-from .server import app as default_app, router, fastapi_options
+from .server import router, fastapi_options
 from uvicorn import run as uvrun
 from fastapi import FastAPI
 import logging
@@ -31,11 +31,9 @@ class Options:
     def serve(self, host: str = "0.0.0.0", no_schedule: bool = False):
         if no_schedule:
             fastapi_options["lifespan"] = None
-            app = FastAPI(**fastapi_options)
-            app.include_router(router)
-        else:
-            app = default_app
-        uvrun(app, host=host)
+        server = FastAPI(**fastapi_options)
+        server.include_router(router)
+        uvrun(server, host=host)
 
     class config:
         def validate(self):
