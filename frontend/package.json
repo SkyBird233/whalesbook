@@ -11,7 +11,8 @@
     "type-check": "vue-tsc --build",
     "lint": "eslint . --fix",
     "format": "prettier --write src/",
-    "openapi-ts": "openapi-ts"
+    "openapi-ts": "openapi-ts",
+    "prepare": "cd .. && husky frontend/.husky"
   },
   "dependencies": {
     "@hey-api/client-fetch": "^0.10.0",
@@ -31,7 +32,9 @@
     "@vue/tsconfig": "^0.7.0",
     "eslint": "^9.22.0",
     "eslint-plugin-vue": "~10.0.0",
+    "husky": "^9.1.7",
     "jiti": "^2.4.2",
+    "lint-staged": "^15.5.0",
     "npm-run-all2": "^7.0.2",
     "prettier": "3.5.3",
     "prettier-plugin-tailwindcss": "^0.6.11",
@@ -44,5 +47,8 @@
     "plugins": [
       "prettier-plugin-tailwindcss"
     ]
+  },
+  "lint-staged": {
+    "*": ["prettier --ignore-unknown --write"]
   }
 }
