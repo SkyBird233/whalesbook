@@ -15,7 +15,7 @@ RUN uv sync --frozen --no-editable --no-dev
 
 FROM python:3.12-alpine
 
-RUN apk add --no-cache docker-cli docker-cli-buildx git
+RUN apk add --no-cache docker-cli docker-cli-buildx git openssh-client
 
 COPY --from=builder /app/.venv /app/.venv
 
