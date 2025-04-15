@@ -18,8 +18,13 @@ const bookStore = useBookStore();
       <div class="grid grid-cols-[min-content_1fr] gap-x-2">
         <template v-for="repo in book.repos" :key="repo.name">
           <div>{{ repo.name }}</div>
-          <OutLink v-if="repo.url" :url="repo.url"
-        /></template>
+          <OutLink v-if="repo.url" :url="repo.url" class="max-w-fit" />
+          <ul class="col-start-2">
+            <li v-for="ref in repo.refs" :key="ref.name">
+              - {{ ref.name?.replace("refs/heads/", "") }}
+            </li>
+          </ul>
+        </template>
       </div>
     </div>
   </div>

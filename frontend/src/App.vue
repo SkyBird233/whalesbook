@@ -19,7 +19,7 @@ onBeforeMount(async () => {
 
 <template>
   <div class="flex h-screen justify-center-safe overflow-auto">
-    <div class="max-w-[min(var(--container-lg),100vw)] min-w-3xs flex-1">
+    <div class="max-w-[min(var(--container-2xl),100vw)] min-w-3xs flex-1">
       <HeaderComponent />
       <main class="m-2">
         <RouterView />
