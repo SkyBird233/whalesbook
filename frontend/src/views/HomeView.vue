@@ -7,10 +7,10 @@ const bookStore = useBookStore();
 
 <template>
   <h2 class="pb-2 text-2xl">Books</h2>
-  <div class="flex flex-col gap-4">
+  <div class="flex flex-col gap-4" v-if="bookStore.books.state === 'ready'">
     <div
       @click="$router.push(`/books/${book.name}`)"
-      v-for="book in bookStore.books"
+      v-for="book in bookStore.books.data"
       :key="book.name"
       class="cursor-pointer p-2 outline hover:shadow-2xl"
     >
@@ -27,5 +27,9 @@ const bookStore = useBookStore();
         </template>
       </div>
     </div>
+  </div>
+  <div v-else-if="bookStore.books.state === 'loading'">Loading books...</div>
+  <div v-else-if="bookStore.books.state === 'error'">
+    Error: {{ bookStore.books.error }}
   </div>
 </template>

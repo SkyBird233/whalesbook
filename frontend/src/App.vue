@@ -1,20 +1,20 @@
 <script setup lang="ts">
-import { onBeforeMount } from "vue";
 import { RouterView } from "vue-router";
 import { useBookStore } from "./stores/books";
 import { getBooks } from "@/client";
 import HeaderComponent from "./components/HeaderComponent.vue";
+import { updateAsyncState } from "./utils/state";
+import { toRef } from "vue";
 
 const bookStore = useBookStore();
 
-onBeforeMount(async () => {
-  if (bookStore.books.length === 0) {
-    console.log("Fetching books...");
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { data, error } = await getBooks();
-    bookStore.books = data ?? [];
-  }
-});
+if (!bookStore.books.data) {
+  console.log("Fetching books...");
+  updateAsyncState(
+    toRef(bookStore, "books"),
+    getBooks().then((r) => r.data),
+  );
+}
 </script>
 
 <template>

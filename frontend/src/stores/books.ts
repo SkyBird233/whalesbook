@@ -3,14 +3,16 @@ import { defineStore } from "pinia";
 import type { Ref } from "vue";
 import type { Book } from "@/client";
 import type { GetBookStateResponse } from "@/client";
+import type { AsyncState } from "@/utils/state";
 
 export const useBookStore = defineStore("books", () => {
-  const books: Ref<Book[]> = ref([]);
-  const states: Ref<{ [bookName: string]: GetBookStateResponse }> = ref({});
+  const books: Ref<AsyncState<Book[]>> = ref({ state: "initial", data: null });
+  const states: Ref<{ [bookName: string]: AsyncState<GetBookStateResponse> }> =
+    ref({});
 
   function getBook(bookName: string) {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    return books.value.filter((v, i, a) => v.name == bookName)[0];
+    if (books.value.state == "ready")
+      return books.value.data.filter((p) => p.name == bookName)[0];
   }
 
   return { books, states, getBook };
