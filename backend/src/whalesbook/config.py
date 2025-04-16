@@ -10,7 +10,7 @@ from typing import Any
 
 
 class Ref(BaseModel):
-    name: str = "main"
+    name: str
     subdomain_name: str | None = None
 
     @model_validator(mode="after")
@@ -30,10 +30,10 @@ class Ref(BaseModel):
 
 
 class Repo(BaseModel):
-    name: str = "main"
+    name: str
     url: str = "https://github.com/username/repo.git"  # End with .git
     type: str = "git"
-    refs: list[Ref] = [Ref()]  # default to refs/heads/<name>; full ref `refs/xxx/...`
+    refs: list[Ref] = [Ref(name="main")]  # default to refs/heads/<name>; full ref `refs/xxx/...`
 
     @field_validator("refs", mode="before")
     @classmethod
@@ -54,9 +54,9 @@ class TraefikConfig(BaseModel):
 
 
 class Book(BaseModel):
-    name: str = "default_book"
+    name: str
     name_registry: str = ""  # library/default_book, as docker image name
-    repos: list[Repo] = [Repo()]
+    repos: list[Repo] = [Repo(name="main")]
     docker_file: Path | None = None
     builder: str = "default"  # existing docker context
     runner: str = "default"
@@ -90,7 +90,7 @@ class Settings(BaseSettings):
 
     schedule: SchedulerConfig = SchedulerConfig()
 
-    books: list[Book] = [Book()]
+    books: list[Book] = [Book(name="default_book")]
 
     @model_validator(mode="after")
     def update_path(self):
