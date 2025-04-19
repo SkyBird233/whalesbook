@@ -75,7 +75,7 @@ watch(() => bookStore.books, lazyUpdateCurrentBookState);
           v-else-if="currentBookState?.state === 'loading'"
           class="border-l pl-[2ch]"
         >
-          State: <i>loading...</i>
+          <i>loading...</i>
         </div>
         <div
           v-else-if="currentBookState?.state === 'error'"
