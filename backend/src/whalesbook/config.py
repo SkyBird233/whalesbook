@@ -32,7 +32,6 @@ class Ref(BaseModel):
 class Repo(BaseModel):
     name: str
     url: str = "https://github.com/username/repo.git"  # End with .git
-    type: str = "git"
     refs: list[Ref] = [Ref(name="main")]  # default to refs/heads/<name>; full ref `refs/xxx/...`
 
     @field_validator("refs", mode="before")
