@@ -21,7 +21,9 @@ services:
 
 
   whalesbook:
-    build: ..
+    build:
+      context: ..
+      dockerfile: dev.Dockerfile
     depends_on:
       - registry
     container_name: whalesbook
