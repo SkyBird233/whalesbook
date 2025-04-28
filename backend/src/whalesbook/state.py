@@ -324,5 +324,6 @@ async def update_book(registry: Registry, book: Book, force: bool = False):
         return
     if force:
         logger.info(f"Forceing update for book {book.name}")
+        ref_pairs_to_update = await get_tracking_ref_pairs(book)
     await update_images(registry.url, book, ref_pairs_to_update, dry_run=False)
     await update_containers(registry, book)
