@@ -18,8 +18,8 @@ class Options:
         logging.basicConfig(level=logging.DEBUG if verbose else logging.INFO)
 
         if not self.config_file.exists():
-            logger.warning(f"Config file not found: {config_file.resolve()}")
-            return
+            logger.error(f"Config file not found: {self.config_file.resolve()}")
+            exit(1)
 
         logger.info(f"Using config file {self.config_file.resolve()}")
         config.settings = config.Settings.from_yaml(Path(config_file))
